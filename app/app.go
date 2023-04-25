@@ -270,6 +270,9 @@ type TeritoriApp struct { // nolint: golint
 	// simulation manager
 	sm           *module.SimulationManager
 	configurator module.Configurator
+
+	// keepers
+	wasmKeeper		wasm.Keeper
 }
 
 func init() {
@@ -509,7 +512,7 @@ func NewTeritoriApp(
 	// if we want to allow any custom callbacks
 	supportedFeatures := "iterator,staking,stargate"
 	wasmOpts := GetWasmOpts(appOpts)
-	app.WasmKeeper = wasmkeeper.NewKeeper(
+	app.WasmKeeper = wasm.NewKeeper(
 		appCodec,
 		keys[wasm.StoreKey],
 		app.GetSubspace(wasm.ModuleName),
@@ -744,7 +747,7 @@ func NewTeritoriApp(
 
 	if manager := app.SnapshotManager(); manager != nil {
 		err = manager.RegisterExtensions(
-			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.WasmKeeper),
+			wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.wasmKeeper),
 		)
 		if err != nil {
 			panic("failed to register snapshot extension: " + err.Error())
